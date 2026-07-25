@@ -3,10 +3,10 @@ import { OpenAPIHono } from "@hono/zod-openapi";
 import { evlog } from "evlog/hono";
 import { cors } from "hono/cors";
 import { requestId } from "hono/request-id";
+import { rateLimiter } from "hono-rate-limiter";
 import { notFound, onError, serveEmojiFavicon } from "stoker/middlewares";
 import { defaultHook } from "stoker/openapi";
 import { auth } from "../middlewares/auth";
-import { rateLimit } from "./rate-limiter";
 import type { AppBindings, AppOpenAPI } from "./types";
 
 export function createRouter() {
@@ -28,8 +28,30 @@ export function createApp() {
 	app.use(requestId());
 
 	// Rate limiting on sensitive auth endpoints
-	app.use("/auth/login", rateLimit({ max: 10, windowMs: 60_000 }));
-	app.use("/auth/register", rateLimit({ max: 5, windowMs: 60_000 }));
+	app.use(
+		"/auth/login",
+		rateLimiter({
+			windowMs: 60_000,
+			limit: 10,
+			keyGenerator: (c) =>
+				c.req.header("x-forwarded-for")?.split(",")[0]?.trim() ??
+				c.req.header("cf-connecting-ip") ??
+				c.req.header("x-real-ip") ??
+				"anonymous",
+		}),
+	);
+	app.use(
+		"/auth/register",
+		rateLimiter({
+			windowMs: 60_000,
+			limit: 5,
+			keyGenerator: (c) =>
+				c.req.header("x-forwarded-for")?.split(",")[0]?.trim() ??
+				c.req.header("cf-connecting-ip") ??
+				c.req.header("x-real-ip") ??
+				"anonymous",
+		}),
+	);
 
 	app.use("/users/*", auth());
 	app.use("/sessions/*", auth());

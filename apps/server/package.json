@@ -20,6 +20,7 @@
 		"dotenv": "catalog:",
 		"evlog": "catalog:",
 		"hono": "^4.12.27",
+		"hono-rate-limiter": "^0.5.3",
 		"jose": "^6.0.0",
 		"stoker": "^2.0.1",
 		"zod": "catalog:"
