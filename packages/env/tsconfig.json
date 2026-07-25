@@ -1,0 +1,3 @@
+{
+  "extends": "@dcc-chatbot/config/tsconfig.base.json"
+}
