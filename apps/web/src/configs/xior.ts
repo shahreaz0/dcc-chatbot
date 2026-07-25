@@ -1,7 +1,8 @@
 import Cookies from "js-cookie";
 import xior from "xior";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8088";
+const API_BASE_URL =
+  process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:8000";
 
 export const xiorInstance = xior.create({
   baseURL: API_BASE_URL,

@@ -49,7 +49,7 @@ export default function DashboardLayout({
         <div className="space-y-6">
           {/* Logo & Brand */}
           <div className="flex items-center gap-3 px-2">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-tr from-primary to-primary/60 text-primary-foreground shadow-md shadow-primary/20">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-linear-to-tr from-primary to-primary/60 text-primary-foreground shadow-md shadow-primary/20">
               <Sparkles className="h-5 w-5" />
             </div>
             <div>
@@ -126,7 +126,7 @@ export default function DashboardLayout({
                     size="sm"
                     className="gap-2 font-medium"
                   >
-                    <span className="max-w-[160px] truncate">
+                    <span className="max-w-40 truncate">
                       {activeProject?.name || "Select Project"}
                     </span>
                     <ChevronDown className="h-3.5 w-3.5 opacity-60" />

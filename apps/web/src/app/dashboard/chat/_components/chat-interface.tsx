@@ -27,7 +27,11 @@ import {
 } from "@dcc-chatbot/ui/components/input-group";
 import { Marker } from "@dcc-chatbot/ui/components/marker";
 import { Message } from "@dcc-chatbot/ui/components/message";
-import { MessageScroller } from "@dcc-chatbot/ui/components/message-scroller";
+import {
+  MessageScroller,
+  MessageScrollerContent,
+  MessageScrollerViewport,
+} from "@dcc-chatbot/ui/components/message-scroller";
 import Cookies from "js-cookie";
 import {
   Bot,
@@ -178,58 +182,64 @@ export function ChatInterface({ projectId, sessionId }: ChatInterfaceProps) {
             </p>
           </div>
         ) : (
-          <MessageScroller className="space-y-4">
-            {messages.map((m) => {
-              const isUser = m.role === "user";
-              const textContent = getMessageText(m);
-              return (
-                <Message
-                  key={m.id}
-                  align={isUser ? "end" : "start"}
-                  className="flex gap-3"
-                >
-                  <div
-                    className={`flex h-8 w-8 shrink-0 select-none items-center justify-center rounded-full font-semibold text-xs ${
-                      isUser
-                        ? "bg-primary text-primary-foreground"
-                        : "border border-border/40 bg-muted text-foreground"
-                    }`}
-                  >
-                    {isUser ? (
-                      <UserIcon className="h-4 w-4" />
-                    ) : (
-                      <Bot className="h-4 w-4 text-primary" />
-                    )}
-                  </div>
+          <MessageScroller className="h-full">
+            <MessageScrollerViewport>
+              <MessageScrollerContent className="space-y-4">
+                {messages.map((m) => {
+                  const isUser = m.role === "user";
+                  const textContent = getMessageText(m);
+                  return (
+                    <Message
+                      key={m.id}
+                      align={isUser ? "end" : "start"}
+                      className="flex gap-3"
+                    >
+                      <div
+                        className={`flex h-8 w-8 shrink-0 select-none items-center justify-center rounded-full font-semibold text-xs ${
+                          isUser
+                            ? "bg-primary text-primary-foreground"
+                            : "border border-border/40 bg-muted text-foreground"
+                        }`}
+                      >
+                        {isUser ? (
+                          <UserIcon className="h-4 w-4" />
+                        ) : (
+                          <Bot className="h-4 w-4 text-primary" />
+                        )}
+                      </div>
 
-                  <Bubble
-                    align={isUser ? "end" : "start"}
-                    variant={isUser ? "default" : "muted"}
-                  >
-                    <BubbleContent className="p-3 text-sm">
-                      {isUser ? (
-                        <div className="whitespace-pre-wrap">{textContent}</div>
-                      ) : (
-                        <Streamdown>{textContent}</Streamdown>
-                      )}
-                    </BubbleContent>
-                  </Bubble>
-                </Message>
-              );
-            })}
+                      <Bubble
+                        align={isUser ? "end" : "start"}
+                        variant={isUser ? "default" : "muted"}
+                      >
+                        <BubbleContent className="p-3 text-sm">
+                          {isUser ? (
+                            <div className="whitespace-pre-wrap">
+                              {textContent}
+                            </div>
+                          ) : (
+                            <Streamdown>{textContent}</Streamdown>
+                          )}
+                        </BubbleContent>
+                      </Bubble>
+                    </Message>
+                  );
+                })}
 
-            {isLoading && (
-              <Message align="start" className="flex gap-3">
-                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-muted text-primary">
-                  <Bot className="h-4 w-4" />
-                </div>
-                <Bubble align="start" variant="muted">
-                  <BubbleContent className="p-3">
-                    <Marker className="h-4 w-4 animate-spin text-primary" />
-                  </BubbleContent>
-                </Bubble>
-              </Message>
-            )}
+                {isLoading && (
+                  <Message align="start" className="flex gap-3">
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-muted text-primary">
+                      <Bot className="h-4 w-4" />
+                    </div>
+                    <Bubble align="start" variant="muted">
+                      <BubbleContent className="p-3">
+                        <Marker className="h-4 w-4 animate-spin text-primary" />
+                      </BubbleContent>
+                    </Bubble>
+                  </Message>
+                )}
+              </MessageScrollerContent>
+            </MessageScrollerViewport>
           </MessageScroller>
         )}
       </div>
