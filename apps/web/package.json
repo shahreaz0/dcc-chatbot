@@ -14,6 +14,7 @@
 		"@swc/helpers": "^0.5.23",
 		"ai": "catalog:",
 		"babel-plugin-react-compiler": "^1.0.0",
+		"clsx": "^2.1.1",
 		"dotenv": "catalog:",
 		"evlog": "catalog:",
 		"lucide-react": "catalog:",
@@ -23,6 +24,7 @@
 		"react-dom": "catalog:",
 		"sonner": "catalog:",
 		"streamdown": "^2.5.0",
+		"tailwind-merge": "^3.6.0",
 		"zod": "catalog:"
 	},
 	"devDependencies": {
