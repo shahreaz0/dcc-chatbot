@@ -1,3 +1,4 @@
+import { password as bunPassword } from "bun";
 import { jwtVerify, SignJWT } from "jose";
 
 const encoder = new TextEncoder();
@@ -30,7 +31,7 @@ export async function verifyJwt<T = unknown>(
 }
 
 export async function hashPassword(password: string): Promise<string> {
-	return await Bun.password.hash(password, {
+	return await bunPassword.hash(password, {
 		algorithm: "argon2id",
 		memoryCost: 19_456,
 		timeCost: 2,
@@ -41,5 +42,5 @@ export async function verifyPassword(
 	hashed: string,
 	plain: string,
 ): Promise<boolean> {
-	return await Bun.password.verify(plain, hashed);
+	return await bunPassword.verify(plain, hashed);
 }
