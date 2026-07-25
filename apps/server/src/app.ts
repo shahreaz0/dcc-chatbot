@@ -10,14 +10,14 @@ import { sessions } from "./modules/sessions/sessions.index";
 import { users } from "./modules/users/users.index";
 
 const routes = [
-	index,
-	auth,
-	users,
-	sessions,
-	projects,
-	prompts,
-	chat,
-	files,
+  index,
+  auth,
+  users,
+  sessions,
+  projects,
+  prompts,
+  chat,
+  files,
 ] as const;
 
 export const app = createApp();
@@ -25,7 +25,7 @@ export const app = createApp();
 configureOpenAPI(app);
 
 for (const route of routes) {
-	app.route("/", route);
+  app.route("/", route);
 }
 
 export type AppType = (typeof routes)[number];

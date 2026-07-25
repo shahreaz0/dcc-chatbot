@@ -5,5 +5,5 @@ import type { AppType } from "../../../server/src/app";
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8088";
 
 export const client = hc<AppType>(API_BASE_URL, {
-	fetch: xiorFetchAdapter,
+  fetch: xiorFetchAdapter,
 });
