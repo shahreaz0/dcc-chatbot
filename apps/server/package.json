@@ -1,5 +1,6 @@
 {
 	"name": "server",
+	"version": "1.0.0",
 	"type": "module",
 	"main": "src/index.ts",
 	"scripts": {
@@ -14,10 +15,14 @@
 		"@ai-sdk/google": "^4.0.7",
 		"@dcc-chatbot/db": "workspace:*",
 		"@dcc-chatbot/env": "workspace:*",
+		"@hono/zod-openapi": "^1.4.0",
+		"@scalar/hono-api-reference": "^0.9.48",
 		"ai": "catalog:",
 		"dotenv": "catalog:",
 		"evlog": "catalog:",
 		"hono": "^4.12.27",
+		"jose": "^6.0.0",
+		"stoker": "^2.0.1",
 		"zod": "catalog:"
 	},
 	"devDependencies": {

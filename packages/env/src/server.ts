@@ -17,6 +17,7 @@ const runtimeEnv = {
 	...process.env,
 	CORS_ORIGIN: process.env.CORS_ORIGIN ?? vercelOrigin,
 	PORT: process.env.PORT ? Number(process.env.PORT) : 8000,
+	JWT_SECRET: process.env.JWT_SECRET ?? "dcc-chatbot-super-secret-jwt-key-2026",
 };
 
 export const env = createEnv({
@@ -27,6 +28,10 @@ export const env = createEnv({
 			.enum(["development", "production", "test"])
 			.default("development"),
 		PORT: z.coerce.number().default(8000),
+		JWT_SECRET: z
+			.string()
+			.min(1)
+			.default("dcc-chatbot-super-secret-jwt-key-2026"),
 	},
 	runtimeEnv: runtimeEnv,
 	skipValidation: !!process.env.SKIP_ENV_VALIDATION,

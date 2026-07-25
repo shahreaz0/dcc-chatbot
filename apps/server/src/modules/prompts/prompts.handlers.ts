@@ -1,0 +1,72 @@
+import prisma from "@dcc-chatbot/db";
+import { HTTPException } from "hono/http-exception";
+import type { AppRouteHandler } from "../../lib/types";
+import type {
+	CreatePromptRoute,
+	DeletePromptRoute,
+	ListPromptsRoute,
+} from "./prompts.routes";
+
+export const createPrompt: AppRouteHandler<CreatePromptRoute> = async (c) => {
+	const userId = c.get("userId") as string;
+	const { projectId } = c.req.valid("param");
+	const body = c.req.valid("json");
+
+	const project = await prisma.project.findFirst({
+		where: { id: projectId, userId, deletedAt: null },
+	});
+
+	if (!project) {
+		throw new HTTPException(404, { message: "Project not found" });
+	}
+
+	const prompt = await prisma.prompt.create({
+		data: {
+			title: body.title,
+			content: body.content,
+			isSystem: body.isSystem ?? false,
+			projectId,
+		},
+	});
+
+	return c.json({ status: "success" as const, data: prompt }, 201);
+};
+
+export const listPrompts: AppRouteHandler<ListPromptsRoute> = async (c) => {
+	const userId = c.get("userId") as string;
+	const { projectId } = c.req.valid("param");
+
+	const project = await prisma.project.findFirst({
+		where: { id: projectId, userId, deletedAt: null },
+	});
+
+	if (!project) {
+		throw new HTTPException(404, { message: "Project not found" });
+	}
+
+	const prompts = await prisma.prompt.findMany({
+		where: { projectId },
+		orderBy: { createdAt: "desc" },
+	});
+
+	return c.json({ status: "success" as const, data: prompts }, 200);
+};
+
+export const deletePrompt: AppRouteHandler<DeletePromptRoute> = async (c) => {
+	const userId = c.get("userId") as string;
+	const { projectId, id } = c.req.valid("param");
+
+	const project = await prisma.project.findFirst({
+		where: { id: projectId, userId, deletedAt: null },
+	});
+
+	if (!project) {
+		throw new HTTPException(404, { message: "Project not found" });
+	}
+
+	await prisma.prompt.deleteMany({
+		where: { id, projectId },
+	});
+
+	return c.json({ status: "success" as const }, 200);
+};
