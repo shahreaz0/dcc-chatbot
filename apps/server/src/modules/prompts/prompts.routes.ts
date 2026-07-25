@@ -4,7 +4,11 @@ import {
 	createSuccessSchema,
 	ProjectIdParamsSchema,
 } from "../../lib/common-schemas";
-import { CreatePromptSchema, PromptSchema } from "./prompts.schemas";
+import {
+	CreatePromptSchema,
+	PromptSchema,
+	UpdatePromptSchema,
+} from "./prompts.schemas";
 
 const tags = ["Prompts"];
 
@@ -89,6 +93,53 @@ export const listPrompts = createRoute({
 	},
 });
 
+export const updatePrompt = createRoute({
+	tags,
+	method: "patch",
+	path: "/projects/{projectId}/prompts/{id}",
+	summary: "Update a prompt",
+	description: "Update the title, content, or type of an existing prompt.",
+	request: {
+		params: z.object({
+			projectId: z.string().openapi({ description: "ID of project" }),
+			id: z.string().openapi({ description: "ID of prompt" }),
+		}),
+		body: {
+			content: {
+				"application/json": {
+					schema: UpdatePromptSchema,
+				},
+			},
+		},
+	},
+	responses: {
+		200: {
+			description: "OK — Prompt updated",
+			content: {
+				"application/json": {
+					schema: createSuccessSchema(PromptSchema),
+				},
+			},
+		},
+		401: {
+			description: "Unauthorized",
+			content: {
+				"application/json": {
+					schema: createHttpErrorSchema({ statusCode: "401" }),
+				},
+			},
+		},
+		404: {
+			description: "Prompt or project not found",
+			content: {
+				"application/json": {
+					schema: createHttpErrorSchema({ statusCode: "404" }),
+				},
+			},
+		},
+	},
+});
+
 export const deletePrompt = createRoute({
 	tags,
 	method: "delete",
@@ -133,4 +184,5 @@ export const deletePrompt = createRoute({
 
 export type CreatePromptRoute = typeof createPrompt;
 export type ListPromptsRoute = typeof listPrompts;
+export type UpdatePromptRoute = typeof updatePrompt;
 export type DeletePromptRoute = typeof deletePrompt;

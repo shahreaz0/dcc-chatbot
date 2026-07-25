@@ -24,12 +24,12 @@
     },
     "apps/server": {
       "name": "server",
+      "version": "1.0.0",
       "dependencies": {
-        "@ai-sdk/devtools": "^1.0.1",
-        "@ai-sdk/google": "^4.0.7",
         "@dcc-chatbot/db": "workspace:*",
         "@dcc-chatbot/env": "workspace:*",
         "@hono/zod-openapi": "^1.4.0",
+        "@openrouter/ai-sdk-provider": "^3.0.0",
         "@scalar/hono-api-reference": "^0.9.48",
         "ai": "catalog:",
         "dotenv": "catalog:",
@@ -157,11 +157,7 @@
     "zod": "^4.4.3",
   },
   "packages": {
-    "@ai-sdk/devtools": ["@ai-sdk/devtools@1.0.7", "", { "dependencies": { "@ai-sdk/provider": "4.0.3", "@hono/node-server": "^1.19.13", "hono": "^4.12.25" }, "bin": { "devtools": "bin/cli.js" } }, "sha512-6wbKHE23oUPOIcJxrkeq3QR+zD7/PxTA+IQFpxbx4CljDi83MBTu4KOotLJRQTXkU1oPZlqWPtGsg8c5j5sFFQ=="],
-
     "@ai-sdk/gateway": ["@ai-sdk/gateway@4.0.28", "", { "dependencies": { "@ai-sdk/provider": "4.0.3", "@ai-sdk/provider-utils": "5.0.12", "@vercel/oidc": "3.2.0" }, "peerDependencies": { "zod": "^3.25.76 || ^4.1.8" } }, "sha512-ee9TsNO3mkgHDWmTmJ8Fvltr6PFh52zhrV2+FaKJY3F3iu7kWZi5tCRJCR1HVhhlpj6lHniUb28nLQdPHkA/1Q=="],
-
-    "@ai-sdk/google": ["@ai-sdk/google@4.0.24", "", { "dependencies": { "@ai-sdk/provider": "4.0.3", "@ai-sdk/provider-utils": "5.0.12" }, "peerDependencies": { "zod": "^3.25.76 || ^4.1.8" } }, "sha512-W+kTGb/RRe2SEYwbKcKYM3N2EQryS2Iqjgou6wPsyP/2BwBU7Q23CF6/YWE8k7xtseDLcSY59jsR2MDpY4azRg=="],
 
     "@ai-sdk/mcp": ["@ai-sdk/mcp@2.0.16", "", { "dependencies": { "@ai-sdk/provider": "4.0.3", "@ai-sdk/provider-utils": "5.0.12", "pkce-challenge": "^5.0.1" }, "peerDependencies": { "zod": "^3.25.76 || ^4.1.8" } }, "sha512-jC2r+StEuk8uIldfP4j8nBwOEBJ2TRwy/bz71SHMZ3NG6PSbvRPXGfyoHHR6JTm1O5GcIww0f6B8LznzkrseDA=="],
 
@@ -494,6 +490,8 @@
     "@nodelib/fs.stat": ["@nodelib/fs.stat@2.0.5", "", {}, "sha512-RkhPPp2zrqDAQA/2jNhnztcPAlv64XdhIp7a7454A5ovI7Bukxgt7MX7udwAu3zg1DcpPU0rz3VV1SeaqvY4+A=="],
 
     "@nodelib/fs.walk": ["@nodelib/fs.walk@1.2.8", "", { "dependencies": { "@nodelib/fs.scandir": "2.1.5", "fastq": "^1.6.0" } }, "sha512-oGB+UxlgWcgQkgwo8GcEGwemoTFt3FIO9ababBmaGwXIoBKZ+GTy0pP185beGg7Llih/NSHSV2XAs1lnznocSg=="],
+
+    "@openrouter/ai-sdk-provider": ["@openrouter/ai-sdk-provider@3.0.0", "", { "peerDependencies": { "ai": "^7.0.0", "zod": "^3.25.76 || ^4.1.8" } }, "sha512-m9XTSWoODH2RM5OsZpaGiN7QRR8cdP5paBWq699Tu3JVmGPBKT8xF8XwV0ZBVVsjikD/JgWfak4VSsTR4wAVbg=="],
 
     "@oxc-project/types": ["@oxc-project/types@0.140.0", "", {}, "sha512-h5LUOzGArYemnW1NMz/DuuQhBi96J6JL2Bk8zE4kvqxB5Sg3jxmCiH4uyOWHDkiKSt5vWlG4FIwCR/DbstcNRQ=="],
 

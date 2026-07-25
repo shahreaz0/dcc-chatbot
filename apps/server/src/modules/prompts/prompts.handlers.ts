@@ -5,6 +5,7 @@ import type {
 	CreatePromptRoute,
 	DeletePromptRoute,
 	ListPromptsRoute,
+	UpdatePromptRoute,
 } from "./prompts.routes";
 
 export const createPrompt: AppRouteHandler<CreatePromptRoute> = async (c) => {
@@ -50,6 +51,39 @@ export const listPrompts: AppRouteHandler<ListPromptsRoute> = async (c) => {
 	});
 
 	return c.json({ status: "success" as const, data: prompts }, 200);
+};
+
+export const updatePrompt: AppRouteHandler<UpdatePromptRoute> = async (c) => {
+	const userId = c.get("userId") as string;
+	const { projectId, id } = c.req.valid("param");
+	const body = c.req.valid("json");
+
+	const project = await prisma.project.findFirst({
+		where: { id: projectId, userId, deletedAt: null },
+	});
+
+	if (!project) {
+		throw new HTTPException(404, { message: "Project not found" });
+	}
+
+	const existing = await prisma.prompt.findFirst({
+		where: { id, projectId },
+	});
+
+	if (!existing) {
+		throw new HTTPException(404, { message: "Prompt not found" });
+	}
+
+	const updated = await prisma.prompt.update({
+		where: { id },
+		data: {
+			...(body.title !== undefined && { title: body.title }),
+			...(body.content !== undefined && { content: body.content }),
+			...(body.isSystem !== undefined && { isSystem: body.isSystem }),
+		},
+	});
+
+	return c.json({ status: "success" as const, data: updated }, 200);
 };
 
 export const deletePrompt: AppRouteHandler<DeletePromptRoute> = async (c) => {

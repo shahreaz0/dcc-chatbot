@@ -2,6 +2,7 @@ import { createRoute, z } from "@hono/zod-openapi";
 import {
 	createHttpErrorSchema,
 	createSuccessSchema,
+	PaginationQuerySchema,
 	ProjectIdParamsSchema,
 } from "../../lib/common-schemas";
 import {
@@ -68,6 +69,7 @@ export const listChatSessions = createRoute({
 	description: "Retrieve all chat sessions for a given project.",
 	request: {
 		params: ProjectIdParamsSchema,
+		query: PaginationQuerySchema,
 	},
 	responses: {
 		200: {
@@ -109,6 +111,7 @@ export const getChatMessages = createRoute({
 			projectId: z.string().openapi({ description: "ID of project" }),
 			chatSessionId: z.string().openapi({ description: "ID of chat session" }),
 		}),
+		query: PaginationQuerySchema,
 	},
 	responses: {
 		200: {

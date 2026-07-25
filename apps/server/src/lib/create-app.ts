@@ -6,6 +6,7 @@ import { requestId } from "hono/request-id";
 import { notFound, onError, serveEmojiFavicon } from "stoker/middlewares";
 import { defaultHook } from "stoker/openapi";
 import { auth } from "../middlewares/auth";
+import { rateLimit } from "./rate-limiter";
 import type { AppBindings, AppOpenAPI } from "./types";
 
 export function createRouter() {
@@ -25,6 +26,10 @@ export function createApp() {
 	);
 	app.use(serveEmojiFavicon("🤖"));
 	app.use(requestId());
+
+	// Rate limiting on sensitive auth endpoints
+	app.use("/auth/login", rateLimit({ max: 10, windowMs: 60_000 }));
+	app.use("/auth/register", rateLimit({ max: 5, windowMs: 60_000 }));
 
 	app.use("/users/*", auth());
 	app.use("/sessions/*", auth());
