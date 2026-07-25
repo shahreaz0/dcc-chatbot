@@ -3,28 +3,32 @@ import { createEnv } from "@t3-oss/env-core";
 import { z } from "zod";
 
 function getVercelOrigin() {
-  const vercelUrl =
-    process.env.VERCEL_ENV === "production"
-      ? (process.env.VERCEL_PROJECT_PRODUCTION_URL ?? process.env.VERCEL_URL)
-      : (process.env.VERCEL_URL ?? process.env.VERCEL_PROJECT_PRODUCTION_URL);
-  if (!vercelUrl) return undefined;
-  return vercelUrl.startsWith("http") ? vercelUrl : `https://${vercelUrl}`;
+	const vercelUrl =
+		process.env.VERCEL_ENV === "production"
+			? (process.env.VERCEL_PROJECT_PRODUCTION_URL ?? process.env.VERCEL_URL)
+			: (process.env.VERCEL_URL ?? process.env.VERCEL_PROJECT_PRODUCTION_URL);
+	if (!vercelUrl) return undefined;
+	return vercelUrl.startsWith("http") ? vercelUrl : `https://${vercelUrl}`;
 }
 
 const vercelOrigin = getVercelOrigin();
 
 const runtimeEnv = {
-  ...process.env,
-  CORS_ORIGIN: process.env.CORS_ORIGIN ?? vercelOrigin,
+	...process.env,
+	CORS_ORIGIN: process.env.CORS_ORIGIN ?? vercelOrigin,
+	PORT: process.env.PORT ? Number(process.env.PORT) : 8000,
 };
 
 export const env = createEnv({
-  server: {
-    DATABASE_URL: z.string().min(1),
-    CORS_ORIGIN: z.url(),
-    NODE_ENV: z.enum(["development", "production", "test"]).default("development"),
-  },
-  runtimeEnv: runtimeEnv,
-  skipValidation: !!process.env.SKIP_ENV_VALIDATION,
-  emptyStringAsUndefined: true,
+	server: {
+		DATABASE_URL: z.string().min(1),
+		CORS_ORIGIN: z.url(),
+		NODE_ENV: z
+			.enum(["development", "production", "test"])
+			.default("development"),
+		PORT: z.coerce.number().default(8000),
+	},
+	runtimeEnv: runtimeEnv,
+	skipValidation: !!process.env.SKIP_ENV_VALIDATION,
+	emptyStringAsUndefined: true,
 });

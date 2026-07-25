@@ -1,32 +1,32 @@
 {
-  "name": "@dcc-chatbot/db",
-  "type": "module",
-  "exports": {
-    ".": {
-      "default": "./src/index.ts"
-    },
-    "./*": {
-      "default": "./src/*.ts"
-    }
-  },
-  "scripts": {
-    "db:push": "prisma db push",
-    "db:generate": "prisma generate",
-    "db:migrate": "prisma migrate dev",
-    "postinstall": "prisma generate",
-    "db:studio": "prisma studio"
-  },
-  "dependencies": {
-    "@dcc-chatbot/env": "workspace:*",
-    "@neondatabase/serverless": "^1.1.0",
-    "@prisma/adapter-neon": "^7.8.0",
-    "@prisma/client": "^7.8.0",
-    "dotenv": "catalog:",
-    "zod": "catalog:"
-  },
-  "devDependencies": {
-    "@dcc-chatbot/config": "workspace:*",
-    "prisma": "^7.8.0",
-    "typescript": "catalog:"
-  }
+	"name": "@dcc-chatbot/db",
+	"type": "module",
+	"exports": {
+		".": {
+			"default": "./src/index.ts"
+		},
+		"./*": {
+			"default": "./src/*.ts"
+		}
+	},
+	"scripts": {
+		"db:push": "prisma db push",
+		"db:generate": "prisma generate",
+		"db:migrate": "prisma migrate dev",
+		"postinstall": "prisma generate",
+		"db:studio": "prisma studio"
+	},
+	"dependencies": {
+		"@dcc-chatbot/env": "workspace:*",
+		"@neondatabase/serverless": "^1.1.0",
+		"@prisma/adapter-neon": "^7.8.0",
+		"@prisma/client": "^7.8.0",
+		"dotenv": "catalog:",
+		"zod": "catalog:"
+	},
+	"devDependencies": {
+		"@dcc-chatbot/config": "workspace:*",
+		"prisma": "^7.8.0",
+		"typescript": "catalog:"
+	}
 }

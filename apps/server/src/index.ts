@@ -2,15 +2,15 @@ import { devToolsMiddleware } from "@ai-sdk/devtools";
 import { google } from "@ai-sdk/google";
 import { env } from "@dcc-chatbot/env/server";
 import {
+  convertToModelMessages,
   createUIMessageStreamResponse,
   streamText,
   toUIMessageStream,
-  convertToModelMessages,
   wrapLanguageModel,
 } from "ai";
 import { initLogger } from "evlog";
 import { createAILogger, createEvlogIntegration } from "evlog/ai";
-import { evlog, type EvlogVariables } from "evlog/hono";
+import { type EvlogVariables, evlog } from "evlog/hono";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 
@@ -53,7 +53,10 @@ app.post("/ai", async (c) => {
 });
 
 app.get("/", (c) => {
-  return c.text("OK");
+  return c.json({ status: "OK" });
 });
 
-export default app;
+export default {
+  port: env.PORT,
+  fetch: app.fetch,
+};
