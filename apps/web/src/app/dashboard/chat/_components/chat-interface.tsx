@@ -150,10 +150,17 @@ export function ChatInterface({ projectId }: ChatInterfaceProps) {
   const onFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!input.trim() && attachments.length === 0) return;
-    sendMessage({
-      text: input,
-      files: attachments.length > 0 ? attachments : undefined,
-    } as any);
+    sendMessage(
+      {
+        text: input,
+        files: attachments.length > 0 ? attachments : undefined,
+      } as any,
+      {
+        body: {
+          systemPrompt: selectedPrompt?.content,
+        },
+      },
+    );
     setInput("");
     setAttachments([]);
     if (fileInputRef.current) fileInputRef.current.value = "";
@@ -217,7 +224,13 @@ export function ChatInterface({ projectId }: ChatInterfaceProps) {
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => regenerate()}
+                  onClick={() =>
+                    regenerate({
+                      body: {
+                        systemPrompt: selectedPrompt?.content,
+                      },
+                    } as any)
+                  }
                   disabled={isLoading}
                   className="gap-1.5 text-muted-foreground text-xs"
                 >
