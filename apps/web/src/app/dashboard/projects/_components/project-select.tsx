@@ -15,6 +15,7 @@ import {
   Check,
   ChevronDown,
   FolderKanban,
+  Pencil,
   Plus,
   Search,
   X,
@@ -53,7 +54,8 @@ export function getProjectInitials(name = ""): string {
 
 export function ProjectSelect() {
   const { activeProject, projects, setProject, isLoading } = useActiveProject();
-  const { setIsCreateProjectDialogOpen } = useProjectsStore();
+  const { setIsCreateProjectDialogOpen, setEditingProject } =
+    useProjectsStore();
   const [open, setOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const searchInputRef = useRef<HTMLInputElement>(null);
@@ -210,12 +212,26 @@ export function ProjectSelect() {
                       </div>
                     </div>
 
-                    {/* Active Checkmark */}
-                    {isActive && (
-                      <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-2xs">
-                        <Check className="h-3 w-3" />
-                      </div>
-                    )}
+                    {/* Active Checkmark & Edit Action */}
+                    <div className="flex items-center gap-1">
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setOpen(false);
+                          setEditingProject(p);
+                        }}
+                        title="Edit Project"
+                        className="rounded p-1 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                      >
+                        <Pencil className="h-3 w-3" />
+                      </button>
+                      {isActive && (
+                        <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-2xs">
+                          <Check className="h-3 w-3" />
+                        </div>
+                      )}
+                    </div>
                   </DropdownMenuItem>
                 );
               })

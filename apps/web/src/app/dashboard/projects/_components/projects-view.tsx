@@ -15,6 +15,7 @@ import {
   Check,
   FolderKanban,
   MessageSquare,
+  Pencil,
   Plus,
   Search,
   Terminal,
@@ -34,7 +35,8 @@ export function ProjectsView() {
   const { data: projects = [], isLoading } = useGetProjects();
   const { mutate: deleteProject, isPending: isDeleting } = useDeleteProject();
   const { activeProjectId, setProject } = useActiveProject();
-  const { setIsCreateProjectDialogOpen } = useProjectsStore();
+  const { setIsCreateProjectDialogOpen, setEditingProject } =
+    useProjectsStore();
   const [searchQuery, setSearchQuery] = useState("");
 
   const filteredProjects = useMemo(() => {
@@ -234,24 +236,35 @@ export function ProjectsView() {
                     <ArrowRight className="h-3 w-3" />
                   </Button>
 
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => {
-                      if (
-                        confirm(
-                          `Are you sure you want to delete "${proj.name}"? This action cannot be undone.`,
-                        )
-                      ) {
-                        deleteProject(proj.id);
-                      }
-                    }}
-                    disabled={isDeleting}
-                    title="Delete Project"
-                    className="h-8 w-8 text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
+                  <div className="flex items-center gap-1">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => setEditingProject(proj)}
+                      title="Edit Project"
+                      className="h-8 w-8 text-muted-foreground transition-colors hover:bg-primary/10 hover:text-primary"
+                    >
+                      <Pencil className="h-3.5 w-3.5" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => {
+                        if (
+                          confirm(
+                            `Are you sure you want to delete "${proj.name}"? This action cannot be undone.`,
+                          )
+                        ) {
+                          deleteProject(proj.id);
+                        }
+                      }}
+                      disabled={isDeleting}
+                      title="Delete Project"
+                      className="h-8 w-8 text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </CardFooter>
               </Card>
             );

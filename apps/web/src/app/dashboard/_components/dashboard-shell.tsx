@@ -14,6 +14,7 @@ import { usePathname } from "next/navigation";
 import { ModeToggle } from "@/components/mode-toggle";
 import { getCurrentUser, useLogout } from "../../(auth)/_hooks/use-auth";
 import { CreateProjectDialog } from "../projects/_components/create-project-dialog";
+import { EditProjectDialog } from "../projects/_components/edit-project-dialog";
 import { ProjectSelect } from "../projects/_components/project-select";
 
 const navItems = [
@@ -119,8 +120,9 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
         </main>
       </div>
 
-      {/* Global Project Creation Dialog */}
+      {/* Global Project Dialogs */}
       <CreateProjectDialog />
+      <EditProjectDialog />
     </div>
   );
 }

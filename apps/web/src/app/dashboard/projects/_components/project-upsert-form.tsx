@@ -13,7 +13,9 @@ import { Textarea } from "@dcc-chatbot/ui/components/textarea";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, useForm } from "react-hook-form";
 import * as z from "zod";
+import type { Project } from "@/lib/types";
 import { useCreateProject } from "../_hooks/use-create-project";
+import { useUpdateProject } from "../_hooks/use-update-project";
 
 const projectFormSchema = z.object({
   name: z
@@ -30,32 +32,47 @@ const projectFormSchema = z.object({
 export type ProjectFormValues = z.infer<typeof projectFormSchema>;
 
 interface ProjectUpsertFormProps {
+  project?: Project | null;
   onCancel?: () => void;
   onSuccess?: () => void;
 }
 
 export function ProjectUpsertForm({
+  project,
   onCancel,
   onSuccess,
 }: ProjectUpsertFormProps) {
-  const { mutate: createProject, isPending } = useCreateProject();
+  const { mutate: createProject, isPending: isCreating } = useCreateProject();
+  const { mutate: updateProject, isPending: isUpdating } = useUpdateProject();
+  const isPending = isCreating || isUpdating;
 
   const form = useForm<ProjectFormValues>({
     resolver: zodResolver(projectFormSchema),
     defaultValues: {
-      name: "",
-      description: "",
+      name: project?.name || "",
+      description: project?.description || "",
       systemPrompt: "",
     },
   });
 
   const onSubmit = (data: ProjectFormValues) => {
-    createProject(data, {
-      onSuccess: () => {
-        form.reset();
-        onSuccess?.();
-      },
-    });
+    if (project) {
+      updateProject(
+        { id: project.id, ...data },
+        {
+          onSuccess: () => {
+            onSuccess?.();
+          },
+        },
+      );
+    } else {
+      createProject(data, {
+        onSuccess: () => {
+          form.reset();
+          onSuccess?.();
+        },
+      });
+    }
   };
 
   return (
@@ -135,7 +152,13 @@ export function ProjectUpsertForm({
           </Button>
         )}
         <Button type="submit" disabled={isPending}>
-          {isPending ? "Creating..." : "Create Project"}
+          {isPending
+            ? project
+              ? "Saving..."
+              : "Creating..."
+            : project
+              ? "Save Changes"
+              : "Create Project"}
         </Button>
       </DialogFooter>
     </form>
