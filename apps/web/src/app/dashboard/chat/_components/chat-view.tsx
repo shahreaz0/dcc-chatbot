@@ -7,7 +7,7 @@ export function ChatView() {
   const { activeProjectId } = useActiveProject();
 
   return (
-    <div className="h-[calc(100vh-6rem)] w-full overflow-hidden">
+    <div className="h-[calc(100vh-6.5rem)] w-full overflow-hidden">
       <ChatInterface
         key={activeProjectId ?? "none"}
         projectId={activeProjectId}

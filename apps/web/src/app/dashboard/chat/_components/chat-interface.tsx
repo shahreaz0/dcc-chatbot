@@ -317,20 +317,21 @@ export function ChatInterface({ projectId }: ChatInterfaceProps) {
                     );
                   })}
 
-                  {isLoading && (
-                    <MessageScrollerItem>
-                      <Message align="start" className="flex gap-3">
-                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-muted text-primary">
-                          <Bot className="h-4 w-4" />
-                        </div>
-                        <Bubble align="start" variant="muted">
-                          <BubbleContent className="p-3">
-                            <Marker className="h-4 w-4 animate-spin text-primary" />
-                          </BubbleContent>
-                        </Bubble>
-                      </Message>
-                    </MessageScrollerItem>
-                  )}
+                  {isLoading &&
+                    messages[messages.length - 1]?.role !== "assistant" && (
+                      <MessageScrollerItem>
+                        <Message align="start" className="flex gap-3">
+                          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-muted text-primary">
+                            <Bot className="h-4 w-4" />
+                          </div>
+                          <Bubble align="start" variant="muted">
+                            <BubbleContent className="p-3">
+                              <Marker className="h-4 w-4 animate-spin text-primary" />
+                            </BubbleContent>
+                          </Bubble>
+                        </Message>
+                      </MessageScrollerItem>
+                    )}
                 </MessageScrollerContent>
               </MessageScrollerViewport>
               <MessageScrollerButton />
