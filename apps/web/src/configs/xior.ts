@@ -1,5 +1,7 @@
 import Cookies from "js-cookie";
-import xior from "xior";
+import xior, { type XiorResponse } from "xior";
+import errorRetry from "xior/plugins/error-retry";
+import setupTokenRefresh from "xior/plugins/token-refresh";
 
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:8000";
@@ -20,43 +22,50 @@ xiorInstance.interceptors.request.use((config) => {
   return config;
 });
 
-xiorInstance.interceptors.response.use(
-  (response) => response,
-  async (error) => {
-    const config = error?.config as
-      | (Record<string, any> & {
-          _retry?: boolean;
-          headers?: Record<string, string>;
-        })
-      | undefined;
-    if (
-      error.response?.status === 401 &&
-      typeof window !== "undefined" &&
-      config &&
-      !config._retry
-    ) {
-      const sessionToken = Cookies.get("dcc_session_token");
-      if (sessionToken) {
-        config._retry = true;
-        try {
-          const res = await xior.post(`${API_BASE_URL}/auth/token`, null, {
-            headers: { token: sessionToken },
-          });
-          const newJwtToken = res.data?.data?.token || res.data?.token;
-          if (newJwtToken) {
-            Cookies.set("dcc_jwt_token", newJwtToken, { expires: 30 });
-            config.headers = config.headers || {};
-            config.headers.Authorization = `Bearer ${newJwtToken}`;
-            return xiorInstance.request(config as any);
-          }
-        } catch {
-          // Token refresh failed
-        }
+function shouldRefresh(response?: XiorResponse) {
+  const sessionToken =
+    typeof window === "undefined" ? null : Cookies.get("dcc_session_token");
+  return Boolean(
+    sessionToken && response?.status && [401, 403].includes(response.status),
+  );
+}
+
+xiorInstance.plugins.use(
+  errorRetry({
+    enableRetry: (config, error) => {
+      if (error?.response && shouldRefresh(error.response)) {
+        return true;
       }
-    }
-    return Promise.reject(error);
-  },
+    },
+  }),
 );
+
+setupTokenRefresh(xiorInstance, {
+  shouldRefresh,
+  async refreshToken(error) {
+    const sessionToken = Cookies.get("dcc_session_token");
+    if (!sessionToken) {
+      Cookies.remove("dcc_jwt_token");
+      Cookies.remove("dcc_session_token");
+      return Promise.reject(error);
+    }
+    try {
+      const res = await xior.post(`${API_BASE_URL}/auth/token`, null, {
+        headers: { token: sessionToken },
+      });
+      const newJwtToken = res.data?.data?.token || res.data?.token;
+      if (newJwtToken) {
+        Cookies.set("dcc_jwt_token", newJwtToken, { expires: 30 });
+      } else {
+        throw error;
+      }
+    } catch (e) {
+      Cookies.remove("dcc_jwt_token");
+      Cookies.remove("dcc_session_token");
+      return Promise.reject(error);
+    }
+  },
+});
 
 export async function xiorFetchAdapter(
   input: RequestInfo | URL,
