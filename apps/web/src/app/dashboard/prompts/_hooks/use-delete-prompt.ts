@@ -5,9 +5,15 @@ import { xiorInstance } from "@/configs/xior";
 export function deletePromptMutationOptions() {
   return mutationOptions({
     mutationKey: ["delete-prompt"],
-    mutationFn: async (id: string) => {
+    mutationFn: async ({
+      projectId,
+      id,
+    }: {
+      projectId: string;
+      id: string;
+    }) => {
       const res = await xiorInstance.delete<{ data: { success: boolean } }>(
-        `/prompts/${id}`,
+        `/projects/${projectId}/prompts/${id}`,
       );
       return res.data.data;
     },
@@ -17,8 +23,10 @@ export function deletePromptMutationOptions() {
     onError: (error: Error) => {
       toast.error(error.message || "Failed to delete prompt");
     },
-    onSettled: (_data, _error, _variables, _onMutateResult, context) => {
-      context.client.invalidateQueries({ queryKey: ["prompts"] });
+    onSettled: (_data, _error, variables, _onMutateResult, context) => {
+      context.client.invalidateQueries({
+        queryKey: ["prompts", variables?.projectId],
+      });
     },
   });
 }

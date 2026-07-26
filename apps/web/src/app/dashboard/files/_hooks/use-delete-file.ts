@@ -5,9 +5,15 @@ import { xiorInstance } from "@/configs/xior";
 export function deleteFileMutationOptions() {
   return mutationOptions({
     mutationKey: ["delete-file"],
-    mutationFn: async ({ id }: { id: string; projectId?: string }) => {
+    mutationFn: async ({
+      projectId,
+      id,
+    }: {
+      projectId: string;
+      id: string;
+    }) => {
       const res = await xiorInstance.delete<{ data: { success: boolean } }>(
-        `/files/${id}`,
+        `/projects/${projectId}/files/${id}`,
       );
       return res.data.data;
     },

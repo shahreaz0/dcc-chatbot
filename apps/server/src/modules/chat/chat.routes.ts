@@ -5,11 +5,7 @@ import {
   PaginationQuerySchema,
   ProjectIdParamsSchema,
 } from "../../lib/common-schemas";
-import {
-  ChatMessageSchema,
-  ChatSessionSchema,
-  SendMessageSchema,
-} from "./chat.schemas";
+import { ChatMessageSchema, SendMessageSchema } from "./chat.schemas";
 
 const tags = ["Chat"];
 
@@ -61,22 +57,22 @@ export const chatStream = createRoute({
   },
 });
 
-export const listChatSessions = createRoute({
+export const getProjectChatMessages = createRoute({
   tags,
   method: "get",
-  path: "/projects/{projectId}/chats",
-  summary: "List chat sessions for a project",
-  description: "Retrieve all chat sessions for a given project.",
+  path: "/projects/{projectId}/messages",
+  summary: "Get continuous project chat messages",
+  description: "Retrieve all continuous message history for a project.",
   request: {
     params: ProjectIdParamsSchema,
     query: PaginationQuerySchema,
   },
   responses: {
     200: {
-      description: "OK — Chat sessions listed",
+      description: "OK — Messages history retrieved",
       content: {
         "application/json": {
-          schema: createSuccessSchema(z.array(ChatSessionSchema)),
+          schema: createSuccessSchema(z.array(ChatMessageSchema)),
         },
       },
     },
@@ -99,26 +95,21 @@ export const listChatSessions = createRoute({
   },
 });
 
-export const getChatMessages = createRoute({
+export const clearProjectChatMessages = createRoute({
   tags,
-  method: "get",
-  path: "/projects/{projectId}/chats/{chatSessionId}/messages",
-  summary: "Get chat session message history",
-  description:
-    "Get stored conversation message history for a specific chat session.",
+  method: "delete",
+  path: "/projects/{projectId}/messages",
+  summary: "Clear continuous project chat messages",
+  description: "Clear continuous chat history for a project.",
   request: {
-    params: z.object({
-      projectId: z.string().openapi({ description: "ID of project" }),
-      chatSessionId: z.string().openapi({ description: "ID of chat session" }),
-    }),
-    query: PaginationQuerySchema,
+    params: ProjectIdParamsSchema,
   },
   responses: {
     200: {
-      description: "OK — Messages history retrieved",
+      description: "OK — Messages cleared",
       content: {
         "application/json": {
-          schema: createSuccessSchema(z.array(ChatMessageSchema)),
+          schema: z.object({ status: z.literal("success") }),
         },
       },
     },
@@ -131,7 +122,7 @@ export const getChatMessages = createRoute({
       },
     },
     404: {
-      description: "Chat session or project not found",
+      description: "Project not found",
       content: {
         "application/json": {
           schema: createHttpErrorSchema({ statusCode: "404" }),
@@ -142,5 +133,5 @@ export const getChatMessages = createRoute({
 });
 
 export type ChatStreamRoute = typeof chatStream;
-export type ListChatSessionsRoute = typeof listChatSessions;
-export type GetChatMessagesRoute = typeof getChatMessages;
+export type GetProjectChatMessagesRoute = typeof getProjectChatMessages;
+export type ClearProjectChatMessagesRoute = typeof clearProjectChatMessages;

@@ -19,7 +19,7 @@ export const createProject: AppRouteHandler<CreateProjectRoute> = async (c) => {
       name: body.name,
       description: body.description ?? null,
       systemPrompt: body.systemPrompt ?? null,
-      model: body.model ?? "google/gemini-2.5-flash",
+      model: body.model ?? "deepseek/deepseek-v4-flash",
       userId,
     },
   });

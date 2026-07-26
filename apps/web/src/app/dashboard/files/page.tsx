@@ -141,10 +141,10 @@ export default function FilesPage() {
                         </div>
                         <div>
                           <p className="font-medium text-foreground text-sm">
-                            {file.fileName}
+                            {file.name}
                           </p>
                           <p className="text-muted-foreground text-xs">
-                            {formatSize(file.fileSize)} • {file.mimeType}
+                            {formatSize(file.fileSize ?? 0)} • {file.mimeType}
                           </p>
                         </div>
                       </div>

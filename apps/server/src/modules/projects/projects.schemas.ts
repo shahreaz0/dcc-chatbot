@@ -11,7 +11,7 @@ export const ProjectSchema = z.object({
     .string()
     .nullable()
     .openapi({ example: "You are a helpful assistant for DCC." }),
-  model: z.string().openapi({ example: "google/gemini-2.5-flash" }),
+  model: z.string().openapi({ example: "deepseek/deepseek-v4-flash" }),
   userId: z.string().openapi({ example: "clx123user" }),
   createdAt: z.date().or(z.string()),
   updatedAt: z.date().or(z.string()),
@@ -30,8 +30,8 @@ export const CreateProjectSchema = z.object({
   model: z
     .string()
     .optional()
-    .default("google/gemini-2.5-flash")
-    .openapi({ example: "google/gemini-2.5-flash" }),
+    .default("deepseek/deepseek-v4-flash")
+    .openapi({ example: "deepseek/deepseek-v4-flash" }),
 });
 
 export const UpdateProjectSchema = z.object({
@@ -48,5 +48,8 @@ export const UpdateProjectSchema = z.object({
     .string()
     .optional()
     .openapi({ example: "Updated system prompt" }),
-  model: z.string().optional().openapi({ example: "gemini-2.5-flash" }),
+  model: z
+    .string()
+    .optional()
+    .openapi({ example: "deepseek/deepseek-v4-flash" }),
 });

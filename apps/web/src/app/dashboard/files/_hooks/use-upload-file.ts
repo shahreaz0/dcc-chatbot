@@ -15,9 +15,8 @@ export function uploadFileMutationOptions() {
     }) => {
       const formData = new FormData();
       formData.append("file", file);
-      formData.append("projectId", projectId);
       const res = await xiorInstance.post<{ data: ProjectFile }>(
-        "/files/upload",
+        `/projects/${projectId}/files`,
         formData,
       );
       return res.data.data;

@@ -8,7 +8,7 @@ export function filesQueryOptions(projectId?: string | null) {
     queryFn: async () => {
       if (!projectId) return [];
       const res = await xiorInstance.get<{ data: ProjectFile[] }>(
-        `/files?projectId=${projectId}`,
+        `/projects/${projectId}/files`,
       );
       return res.data.data;
     },

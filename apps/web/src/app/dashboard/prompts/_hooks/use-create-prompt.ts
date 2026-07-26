@@ -6,14 +6,20 @@ import type { SystemPrompt } from "@/lib/types";
 export function createPromptMutationOptions() {
   return mutationOptions({
     mutationKey: ["create-prompt"],
-    mutationFn: async (payload: {
-      name: string;
-      prompt: string;
-      description?: string;
+    mutationFn: async ({
+      projectId,
+      title,
+      content,
+      isSystem = false,
+    }: {
+      projectId: string;
+      title: string;
+      content: string;
+      isSystem?: boolean;
     }) => {
       const res = await xiorInstance.post<{ data: SystemPrompt }>(
-        "/prompts",
-        payload,
+        `/projects/${projectId}/prompts`,
+        { title, content, isSystem },
       );
       return res.data.data;
     },
@@ -23,8 +29,10 @@ export function createPromptMutationOptions() {
     onError: (error: Error) => {
       toast.error(error.message || "Failed to create prompt");
     },
-    onSettled: (_data, _error, _variables, _onMutateResult, context) => {
-      context.client.invalidateQueries({ queryKey: ["prompts"] });
+    onSettled: (_data, _error, variables, _onMutateResult, context) => {
+      context.client.invalidateQueries({
+        queryKey: ["prompts", variables?.projectId],
+      });
     },
   });
 }

@@ -32,6 +32,7 @@ import {
   MessageScrollerContent,
   MessageScrollerViewport,
 } from "@dcc-chatbot/ui/components/message-scroller";
+import { DefaultChatTransport } from "ai";
 import Cookies from "js-cookie";
 import {
   Bot,
@@ -40,16 +41,18 @@ import {
   Send,
   StopCircle,
   Terminal,
+  Trash2,
   User as UserIcon,
   X,
 } from "lucide-react";
-import { useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Streamdown } from "streamdown";
 import { useGetPrompts } from "../../prompts/_hooks/use-get-prompts";
+import { useClearChatMessages } from "../_hooks/use-clear-chat-messages";
+import { useGetChatMessages } from "../_hooks/use-get-chat-messages";
 
 interface ChatInterfaceProps {
   projectId: string | null;
-  sessionId?: string | null;
 }
 
 function getMessageText(m: UIMessage): string {
@@ -65,8 +68,12 @@ function getMessageText(m: UIMessage): string {
   return "";
 }
 
-export function ChatInterface({ projectId, sessionId }: ChatInterfaceProps) {
-  const { data: prompts = [] } = useGetPrompts();
+export function ChatInterface({ projectId }: ChatInterfaceProps) {
+  const { data: prompts = [] } = useGetPrompts(projectId);
+  const { data: initialMessages = [] } = useGetChatMessages(projectId);
+  const { mutate: clearMessages, isPending: isClearing } =
+    useClearChatMessages();
+
   const [selectedPromptId, setSelectedPromptId] = useState<string | null>(null);
   const [input, setInput] = useState("");
   const [attachments, setAttachments] = useState<File[]>([]);
@@ -74,16 +81,41 @@ export function ChatInterface({ projectId, sessionId }: ChatInterfaceProps) {
 
   const selectedPrompt = prompts.find((p) => p.id === selectedPromptId);
 
-  const { messages, sendMessage, stop, regenerate, status } = useChat({
-    headers: {
-      Authorization: `Bearer ${typeof window !== "undefined" ? Cookies.get("dcc_jwt_token") || "" : ""}`,
-    },
-    body: {
-      projectId,
-      sessionId,
-      systemPrompt: selectedPrompt?.prompt,
-    },
-  } as any);
+  const transport = useMemo(
+    () =>
+      new DefaultChatTransport({
+        api: projectId
+          ? `${process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:8000"}/projects/${projectId}/chat`
+          : "/api/chat",
+        headers: (): Record<string, string> => {
+          const token =
+            typeof window !== "undefined" ? Cookies.get("dcc_jwt_token") : null;
+          return token ? { Authorization: `Bearer ${token}` } : {};
+        },
+      }),
+    [projectId],
+  );
+
+  const { messages, setMessages, sendMessage, stop, regenerate, status } =
+    useChat({
+      transport,
+      body: {
+        systemPrompt: selectedPrompt?.content,
+      },
+    } as any);
+
+  useEffect(() => {
+    if (initialMessages && initialMessages.length > 0) {
+      setMessages(
+        initialMessages.map((m) => ({
+          id: m.id,
+          role: m.role,
+          content: m.content,
+          parts: [{ type: "text" as const, text: m.content }],
+        })),
+      );
+    }
+  }, [initialMessages, setMessages]);
 
   const isLoading = status === "submitted" || status === "streaming";
 
@@ -95,6 +127,20 @@ export function ChatInterface({ projectId, sessionId }: ChatInterfaceProps) {
 
   const removeAttachment = (index: number) => {
     setAttachments((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const handleClearHistory = () => {
+    if (!projectId) return;
+    if (window.confirm("Are you sure you want to clear this chat history?")) {
+      clearMessages(
+        { projectId },
+        {
+          onSuccess: () => {
+            setMessages([]);
+          },
+        },
+      );
+    }
   };
 
   const onFormSubmit = (e: React.FormEvent) => {
@@ -125,7 +171,7 @@ export function ChatInterface({ projectId, sessionId }: ChatInterfaceProps) {
       <div className="flex h-12 items-center justify-between border-border/40 border-b bg-muted/30 px-4">
         <div className="flex items-center gap-2">
           <span className="font-semibold text-muted-foreground text-xs uppercase">
-            Persona Prompt:
+            Persona:
           </span>
           <DropdownMenu>
             <DropdownMenuTrigger
@@ -138,7 +184,7 @@ export function ChatInterface({ projectId, sessionId }: ChatInterfaceProps) {
               }
             >
               <Terminal className="h-3.5 w-3.5 text-primary" />
-              <span>{selectedPrompt?.name || "Default Assistant"}</span>
+              <span>{selectedPrompt?.title || "Default Assistant"}</span>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start" className="w-56">
               <DropdownMenuItem onClick={() => setSelectedPromptId(null)}>
@@ -149,23 +195,38 @@ export function ChatInterface({ projectId, sessionId }: ChatInterfaceProps) {
                   key={p.id}
                   onClick={() => setSelectedPromptId(p.id)}
                 >
-                  {p.name}
+                  {p.title}
                 </DropdownMenuItem>
               ))}
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
 
-        {messages.length > 0 && (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => regenerate()}
-            className="gap-1.5 text-muted-foreground text-xs"
-          >
-            <RotateCcw className="h-3.5 w-3.5" /> Regenerate
-          </Button>
-        )}
+        <div className="flex items-center gap-2">
+          {messages.length > 0 && (
+            <>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => regenerate()}
+                disabled={isLoading}
+                className="gap-1.5 text-muted-foreground text-xs"
+              >
+                <RotateCcw className="h-3.5 w-3.5" /> Regenerate
+              </Button>
+
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleClearHistory}
+                disabled={isClearing || isLoading}
+                className="gap-1.5 text-muted-foreground text-xs hover:text-destructive"
+              >
+                <Trash2 className="h-3.5 w-3.5" /> Clear History
+              </Button>
+            </>
+          )}
+        </div>
       </div>
 
       {/* Messages Scroll Area */}
@@ -175,10 +236,10 @@ export function ChatInterface({ projectId, sessionId }: ChatInterfaceProps) {
             <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 text-primary">
               <Bot className="h-6 w-6" />
             </div>
-            <h3 className="font-semibold text-lg">DCC Chatbot Assistant</h3>
+            <h3 className="font-semibold text-lg">Continuous Project Chat</h3>
             <p className="max-w-sm text-muted-foreground text-sm">
-              Ask questions about your project documents, generate code, or
-              analyze codebase context.
+              Type your message below. All user and assistant messages will
+              stream and build a continuous thread for this project.
             </p>
           </div>
         ) : (
@@ -276,7 +337,7 @@ export function ChatInterface({ projectId, sessionId }: ChatInterfaceProps) {
 
           <InputGroup className="flex-1">
             <InputGroupTextarea
-              placeholder="Ask anything..."
+              placeholder="Type your message..."
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => {

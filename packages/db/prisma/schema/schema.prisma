@@ -49,13 +49,13 @@ model Project {
   name         String
   description  String?
   systemPrompt String?
-  model        String  @default("google/gemini-2.5-flash")
+  model        String  @default("deepseek/deepseek-v4-flash")
   user         User    @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId       String
 
-  prompts      Prompt[]
-  chatSessions ChatSession[]
-  files        ProjectFile[]
+  prompts  Prompt[]
+  messages ChatMessage[]
+  files    ProjectFile[]
 
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
@@ -79,30 +79,16 @@ model Prompt {
   @@index([projectId])
 }
 
-model ChatSession {
+model ChatMessage {
   id        String   @id @default(cuid(2))
-  title     String?
   project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
   projectId String
-
-  messages ChatMessage[]
+  role      String
+  content   String
 
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
 
   @@index([projectId])
-}
-
-model ChatMessage {
-  id            String      @id @default(cuid(2))
-  chatSession   ChatSession @relation(fields: [chatSessionId], references: [id], onDelete: Cascade)
-  chatSessionId String
-  role          String
-  content       String
-
-  createdAt DateTime @default(now())
-
-  @@index([chatSessionId])
 }
 
 model ProjectFile {

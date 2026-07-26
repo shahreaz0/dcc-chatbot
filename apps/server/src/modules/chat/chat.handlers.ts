@@ -1,9 +1,8 @@
-import { readFile } from "node:fs/promises";
-import path from "node:path";
 import prisma from "@dcc-chatbot/db";
 import { env } from "@dcc-chatbot/env/server";
 import { createOpenRouter } from "@openrouter/ai-sdk-provider";
 import {
+  convertToModelMessages,
   createUIMessageStreamResponse,
   streamText,
   toUIMessageStream,
@@ -14,79 +13,25 @@ import { buildPagination } from "../../lib/common-schemas";
 import type { AppRouteHandler } from "../../lib/types";
 import type {
   ChatStreamRoute,
-  GetChatMessagesRoute,
-  ListChatSessionsRoute,
+  ClearProjectChatMessagesRoute,
+  GetProjectChatMessagesRoute,
 } from "./chat.routes";
 
-/** Resolve stored fileUrl (e.g. "/uploads/proj/file.png") to an absolute path */
-function resolveFilePath(fileUrl: string): string {
-  const relative = fileUrl.startsWith("/") ? fileUrl.slice(1) : fileUrl;
-  return path.join(process.cwd(), relative);
-}
-
-type TextPart = { type: "text"; text: string };
-type ImagePart = {
-  type: "image";
-  image: string;
-  mimeType?: string;
-};
-type FilePart = {
-  type: "file";
-  data: string;
-  mediaType: string;
-};
-
-type MessagePart = TextPart | ImagePart | FilePart;
-
-/** Build AI SDK message parts for project files to inject into context */
-async function buildFileParts(projectId: string): Promise<MessagePart[]> {
-  const files = await prisma.projectFile.findMany({
-    where: { projectId },
-    orderBy: { createdAt: "desc" },
-    take: 5,
-  });
-
-  const parts: MessagePart[] = [];
-
-  for (const file of files) {
-    if (!file.fileUrl) continue;
-
-    try {
-      const filePath = resolveFilePath(file.fileUrl);
-      const buffer = await readFile(filePath);
-
-      if (file.mimeType?.startsWith("image/")) {
-        parts.push({
-          type: "image",
-          image: buffer.toString("base64"),
-          mimeType: file.mimeType,
-        });
-      } else if (
-        file.mimeType === "application/pdf" ||
-        file.mimeType?.startsWith("text/") ||
-        file.name.endsWith(".md") ||
-        file.name.endsWith(".txt") ||
-        file.name.endsWith(".csv") ||
-        file.name.endsWith(".json")
-      ) {
-        const text = buffer.toString("utf-8").slice(0, 8000);
-        parts.push({
-          type: "text",
-          text: `[Attached file: ${file.name}]\n\`\`\`\n${text}\n\`\`\``,
-        });
-      } else {
-        parts.push({
-          type: "file",
-          data: buffer.toString("base64"),
-          mediaType: file.mimeType ?? "application/octet-stream",
-        });
-      }
-    } catch {
-      // File missing on disk — skip silently
-    }
+function extractMessageContent(m?: {
+  content?: string;
+  parts?: Array<{ type: string; text?: string }>;
+}): string {
+  if (!m) return "";
+  if (typeof m.content === "string" && m.content) {
+    return m.content;
   }
-
-  return parts;
+  if (m.parts && Array.isArray(m.parts)) {
+    return m.parts
+      .map((p) => (p.type === "text" && p.text ? p.text : ""))
+      .filter(Boolean)
+      .join("\n");
+  }
+  return "";
 }
 
 export const chatStream: AppRouteHandler<ChatStreamRoute> = async (c) => {
@@ -103,9 +48,26 @@ export const chatStream: AppRouteHandler<ChatStreamRoute> = async (c) => {
     throw new HTTPException(404, { message: "Project not found" });
   }
 
+  const lastUserMessage = body.messages?.[body.messages.length - 1];
+  if (lastUserMessage && lastUserMessage.role === "user") {
+    const userText = extractMessageContent(lastUserMessage);
+    if (userText) {
+      await prisma.chatMessage.create({
+        data: {
+          projectId,
+          role: "user",
+          content: userText,
+        },
+      });
+    }
+  }
+
   const promptInstructions: string[] = [];
   if (project.systemPrompt) {
     promptInstructions.push(project.systemPrompt);
+  }
+  if (body.systemPrompt) {
+    promptInstructions.push(body.systemPrompt);
   }
   for (const p of project.prompts) {
     promptInstructions.push(`[Prompt: ${p.title}]\n${p.content}`);
@@ -113,51 +75,10 @@ export const chatStream: AppRouteHandler<ChatStreamRoute> = async (c) => {
   const systemInstruction =
     promptInstructions.length > 0 ? promptInstructions.join("\n\n") : undefined;
 
-  let chatSessionId = body.chatSessionId;
-  if (!chatSessionId) {
-    const session = await prisma.chatSession.create({
-      data: {
-        projectId,
-        title: body.messages[0]?.content.slice(0, 50) ?? "New Chat",
-      },
-    });
-    chatSessionId = session.id;
-  }
+  const modelMessages = await convertToModelMessages(body.messages);
 
-  const userMessage = body.messages[body.messages.length - 1];
-  if (userMessage && userMessage.role === "user") {
-    await prisma.chatMessage.create({
-      data: {
-        chatSessionId,
-        role: userMessage.role,
-        content: userMessage.content,
-      },
-    });
-  }
-
-  const fileParts = await buildFileParts(projectId);
-
-  const mappedMessages = body.messages.map((m, i) => {
-    const isLastUser =
-      i === body.messages.length - 1 &&
-      m.role === "user" &&
-      fileParts.length > 0;
-
-    if (isLastUser) {
-      return {
-        role: "user" as const,
-        content: [{ type: "text" as const, text: m.content }, ...fileParts],
-      };
-    }
-
-    return {
-      role: m.role as "user" | "assistant" | "system",
-      content: m.content,
-    };
-  });
-
-  const rawModel = project.model ?? "google/gemini-2.5-flash";
-  const modelName = rawModel.includes("/") ? rawModel : `google/${rawModel}`;
+  const rawModel = project.model ?? "deepseek/deepseek-v4-flash";
+  const modelName = rawModel.includes("/") ? rawModel : `deepseek/${rawModel}`;
 
   const openrouter = createOpenRouter({ apiKey: env.OPENROUTER_API_KEY });
   const ai = createAILogger(c.get("log"));
@@ -166,13 +87,13 @@ export const chatStream: AppRouteHandler<ChatStreamRoute> = async (c) => {
   const result = streamText({
     model,
     system: systemInstruction,
-    messages: mappedMessages,
+    messages: modelMessages,
     telemetry: { isEnabled: true },
     onFinish: async ({ text }) => {
-      if (text && chatSessionId) {
+      if (text) {
         await prisma.chatMessage.create({
           data: {
-            chatSessionId,
+            projectId,
             role: "assistant",
             content: text,
           },
@@ -183,15 +104,12 @@ export const chatStream: AppRouteHandler<ChatStreamRoute> = async (c) => {
 
   return createUIMessageStreamResponse({
     stream: toUIMessageStream({ stream: result.stream }),
-    headers: {
-      "X-Chat-Session-Id": chatSessionId,
-    },
   });
 };
 
-export const listChatSessions: AppRouteHandler<ListChatSessionsRoute> = async (
-  c,
-) => {
+export const getProjectChatMessages: AppRouteHandler<
+  GetProjectChatMessagesRoute
+> = async (c) => {
   const userId = c.get("userId") as string;
   const { projectId } = c.req.valid("param");
   const { page, perPage } = c.req.valid("query");
@@ -206,34 +124,8 @@ export const listChatSessions: AppRouteHandler<ListChatSessionsRoute> = async (
 
   const pagination = buildPagination(page, perPage);
 
-  const sessions = await prisma.chatSession.findMany({
-    where: { projectId },
-    orderBy: { updatedAt: "desc" },
-    ...(pagination.take !== undefined ? pagination : {}),
-  });
-
-  return c.json({ status: "success" as const, data: sessions }, 200);
-};
-
-export const getChatMessages: AppRouteHandler<GetChatMessagesRoute> = async (
-  c,
-) => {
-  const userId = c.get("userId") as string;
-  const { projectId, chatSessionId } = c.req.valid("param");
-  const { page, perPage } = c.req.valid("query");
-
-  const project = await prisma.project.findFirst({
-    where: { id: projectId, userId, deletedAt: null },
-  });
-
-  if (!project) {
-    throw new HTTPException(404, { message: "Project not found" });
-  }
-
-  const pagination = buildPagination(page, perPage);
-
   const messages = await prisma.chatMessage.findMany({
-    where: { chatSessionId },
+    where: { projectId },
     orderBy: { createdAt: "asc" },
     ...(pagination.take !== undefined ? pagination : {}),
   });
@@ -246,4 +138,25 @@ export const getChatMessages: AppRouteHandler<GetChatMessagesRoute> = async (
   }));
 
   return c.json({ status: "success" as const, data: formattedMessages }, 200);
+};
+
+export const clearProjectChatMessages: AppRouteHandler<
+  ClearProjectChatMessagesRoute
+> = async (c) => {
+  const userId = c.get("userId") as string;
+  const { projectId } = c.req.valid("param");
+
+  const project = await prisma.project.findFirst({
+    where: { id: projectId, userId, deletedAt: null },
+  });
+
+  if (!project) {
+    throw new HTTPException(404, { message: "Project not found" });
+  }
+
+  await prisma.chatMessage.deleteMany({
+    where: { projectId },
+  });
+
+  return c.json({ status: "success" as const }, 200);
 };

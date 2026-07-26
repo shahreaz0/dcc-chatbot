@@ -7,25 +7,12 @@ export const ChatMessageSchema = z.object({
   createdAt: z.date().or(z.string()),
 });
 
-export const ChatSessionSchema = z.object({
-  id: z.string().openapi({ example: "cs_123" }),
-  title: z.string().nullable().openapi({ example: "General Chat" }),
-  projectId: z.string().openapi({ example: "clx123project" }),
-  createdAt: z.date().or(z.string()),
-  updatedAt: z.date().or(z.string()),
-});
-
 export const SendMessageSchema = z.object({
-  chatSessionId: z
+  systemPrompt: z
     .string()
     .optional()
-    .openapi({ description: "Optional existing chat session ID" }),
+    .openapi({ description: "Optional system prompt override" }),
   messages: z
-    .array(
-      z.object({
-        role: z.enum(["user", "assistant", "system"]),
-        content: z.string(),
-      }),
-    )
-    .openapi({ description: "Array of chat messages" }),
+    .array(z.any())
+    .openapi({ description: "Array of UI chat messages from AI SDK" }),
 });

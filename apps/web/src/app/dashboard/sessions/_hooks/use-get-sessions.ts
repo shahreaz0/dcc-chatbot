@@ -6,7 +6,7 @@ export function sessionsQueryOptions() {
   return queryOptions({
     queryKey: ["sessions"],
     queryFn: async () => {
-      const res = await xiorInstance.get<{ data: Session[] }>("/sessions");
+      const res = await xiorInstance.get<{ data: Session[] }>("/sessions/me");
       return res.data.data;
     },
   });

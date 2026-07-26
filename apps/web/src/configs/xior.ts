@@ -22,9 +22,37 @@ xiorInstance.interceptors.request.use((config) => {
 
 xiorInstance.interceptors.response.use(
   (response) => response,
-  (error) => {
-    if (error.response?.status === 401) {
-      console.error("Authentication error / 401 Unauthorized");
+  async (error) => {
+    const config = error?.config as
+      | (Record<string, any> & {
+          _retry?: boolean;
+          headers?: Record<string, string>;
+        })
+      | undefined;
+    if (
+      error.response?.status === 401 &&
+      typeof window !== "undefined" &&
+      config &&
+      !config._retry
+    ) {
+      const sessionToken = Cookies.get("dcc_session_token");
+      if (sessionToken) {
+        config._retry = true;
+        try {
+          const res = await xior.post(`${API_BASE_URL}/auth/token`, null, {
+            headers: { token: sessionToken },
+          });
+          const newJwtToken = res.data?.data?.token || res.data?.token;
+          if (newJwtToken) {
+            Cookies.set("dcc_jwt_token", newJwtToken, { expires: 30 });
+            config.headers = config.headers || {};
+            config.headers.Authorization = `Bearer ${newJwtToken}`;
+            return xiorInstance.request(config as any);
+          }
+        } catch {
+          // Token refresh failed
+        }
+      }
     }
     return Promise.reject(error);
   },

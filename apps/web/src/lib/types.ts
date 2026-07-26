@@ -25,10 +25,10 @@ export interface Project {
 
 export interface SystemPrompt {
   id: string;
-  name: string;
-  prompt: string;
-  description?: string | null;
-  isDefault?: boolean;
+  title: string;
+  content: string;
+  isSystem?: boolean;
+  projectId: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -36,25 +36,16 @@ export interface SystemPrompt {
 export interface ProjectFile {
   id: string;
   projectId: string;
-  fileName: string;
-  fileSize: number;
-  mimeType: string;
-  fileUrl: string;
+  name: string;
+  fileSize?: number | null;
+  mimeType?: string | null;
+  fileUrl?: string | null;
   createdAt: string;
-}
-
-export interface ChatSession {
-  id: string;
-  projectId: string;
-  title: string;
-  promptId?: string | null;
-  createdAt: string;
-  updatedAt: string;
 }
 
 export interface ChatMessage {
   id: string;
-  sessionId: string;
+  projectId: string;
   role: "user" | "assistant" | "system";
   content: string;
   attachments?: {
