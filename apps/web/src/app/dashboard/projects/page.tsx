@@ -3,45 +3,23 @@
 import { Button } from "@dcc-chatbot/ui/components/button";
 import {
   Card,
-  CardContent,
   CardDescription,
   CardFooter,
   CardHeader,
   CardTitle,
 } from "@dcc-chatbot/ui/components/card";
-import { Input } from "@dcc-chatbot/ui/components/input";
-import { Label } from "@dcc-chatbot/ui/components/label";
 import { ArrowRight, Check, FolderKanban, Plus, Trash2 } from "lucide-react";
-import { useState } from "react";
+import { useProjectsStore } from "@/stores/projects-store";
+import { CreateProjectDialog } from "./_components/create-project-dialog";
 import { useActiveProject } from "./_hooks/use-active-project";
-import { useCreateProject } from "./_hooks/use-create-project";
 import { useDeleteProject } from "./_hooks/use-delete-project";
 import { useGetProjects } from "./_hooks/use-get-projects";
 
 export default function ProjectsPage() {
   const { data: projects = [], isLoading } = useGetProjects();
-  const { mutate: createProject, isPending: isCreating } = useCreateProject();
   const { mutate: deleteProject, isPending: isDeleting } = useDeleteProject();
   const { activeProjectId, setProject } = useActiveProject();
-
-  const [name, setName] = useState("");
-  const [description, setDescription] = useState("");
-  const [showCreate, setShowCreate] = useState(false);
-
-  const handleCreate = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!name.trim()) return;
-    createProject(
-      { name, description },
-      {
-        onSuccess: () => {
-          setName("");
-          setDescription("");
-          setShowCreate(false);
-        },
-      },
-    );
-  };
+  const { setIsCreateProjectDialogOpen } = useProjectsStore();
 
   return (
     <div className="mx-auto max-w-6xl space-y-6">
@@ -55,57 +33,13 @@ export default function ProjectsPage() {
             Manage your AI knowledge bases and conversation environments
           </p>
         </div>
-        <Button onClick={() => setShowCreate(!showCreate)} className="gap-2">
+        <Button
+          onClick={() => setIsCreateProjectDialogOpen(true)}
+          className="gap-2"
+        >
           <Plus className="h-4 w-4" /> New Project
         </Button>
       </div>
-
-      {/* Create Project Form */}
-      {showCreate && (
-        <Card className="border-primary/30 bg-primary/5 shadow-md">
-          <CardHeader>
-            <CardTitle className="text-lg">Create New Project</CardTitle>
-            <CardDescription>
-              Group your chat sessions and context files
-            </CardDescription>
-          </CardHeader>
-          <form onSubmit={handleCreate}>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="proj-name">Project Name</Label>
-                <Input
-                  id="proj-name"
-                  placeholder="e.g. Customer Support Bot"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="proj-desc">Description (Optional)</Label>
-                <Input
-                  id="proj-desc"
-                  placeholder="Brief description of this project"
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                />
-              </div>
-            </CardContent>
-            <CardFooter className="flex justify-end gap-2">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setShowCreate(false)}
-              >
-                Cancel
-              </Button>
-              <Button type="submit" disabled={isCreating}>
-                {isCreating ? "Creating..." : "Save Project"}
-              </Button>
-            </CardFooter>
-          </form>
-        </Card>
-      )}
 
       {/* Projects Grid */}
       {isLoading ? (
@@ -121,7 +55,10 @@ export default function ProjectsPage() {
           <p className="mb-4 text-muted-foreground text-sm">
             Create your first project to start chatting
           </p>
-          <Button onClick={() => setShowCreate(true)} className="gap-2">
+          <Button
+            onClick={() => setIsCreateProjectDialogOpen(true)}
+            className="gap-2"
+          >
             <Plus className="h-4 w-4" /> Create Project
           </Button>
         </Card>
@@ -179,6 +116,9 @@ export default function ProjectsPage() {
           })}
         </div>
       )}
+
+      {/* Global Dialog Component */}
+      <CreateProjectDialog />
     </div>
   );
 }

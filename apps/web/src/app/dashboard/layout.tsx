@@ -9,7 +9,6 @@ import {
 } from "@dcc-chatbot/ui/components/dropdown-menu";
 import {
   ChevronDown,
-  FileCode,
   FolderKanban,
   LogOut,
   MessageSquare,
@@ -21,7 +20,9 @@ import {
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ModeToggle } from "@/components/mode-toggle";
+import { useProjectsStore } from "@/stores/projects-store";
 import { getCurrentUser, useLogout } from "../(auth)/_hooks/use-auth";
+import { CreateProjectDialog } from "./projects/_components/create-project-dialog";
 import { useActiveProject } from "./projects/_hooks/use-active-project";
 
 const navItems = [
@@ -40,6 +41,7 @@ export default function DashboardLayout({
   const { activeProject, projects, setProject } = useActiveProject();
   const { mutate: logout } = useLogout();
   const currentUser = getCurrentUser();
+  const { setIsCreateProjectDialogOpen } = useProjectsStore();
 
   return (
     <div className="flex h-screen overflow-hidden bg-background text-foreground">
@@ -146,8 +148,13 @@ export default function DashboardLayout({
                     {p.name}
                   </DropdownMenuItem>
                 ))}
+                <DropdownMenuItem
+                  onClick={() => setIsCreateProjectDialogOpen(true)}
+                >
+                  <Plus className="mr-2 h-3.5 w-3.5" /> New Project
+                </DropdownMenuItem>
                 <DropdownMenuItem render={<Link href="/dashboard/projects" />}>
-                  <Plus className="mr-2 h-3.5 w-3.5" /> Manage Projects
+                  <FolderKanban className="mr-2 h-3.5 w-3.5" /> Manage Projects
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -164,6 +171,9 @@ export default function DashboardLayout({
           {children}
         </main>
       </div>
+
+      {/* Global Project Creation Dialog */}
+      <CreateProjectDialog />
     </div>
   );
 }
