@@ -75,7 +75,7 @@ export default function AIPage() {
   };
 
   return (
-    <MessageScrollerProvider>
+    <MessageScrollerProvider autoScroll defaultScrollPosition="last-anchor">
       <div className="flex h-full min-h-0 w-full flex-col">
         <header className="shrink-0 border-b px-4 py-3">
           <div className="mx-auto flex w-full max-w-3xl items-center justify-between gap-3">
@@ -132,6 +132,7 @@ export default function AIPage() {
                     return (
                       <MessageScrollerItem
                         key={message.id}
+                        messageId={message.id}
                         scrollAnchor={isUser}
                       >
                         <Message align={isUser ? "end" : "start"}>
@@ -181,7 +182,6 @@ export default function AIPage() {
                       </Message>
                     </MessageScrollerItem>
                   )}
-                  <MessageScrollerItem scrollAnchor />
                 </MessageScrollerContent>
               </MessageScrollerViewport>
               <MessageScrollerButton />
