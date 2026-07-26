@@ -1,3 +1,4 @@
+import prisma from "@dcc-chatbot/db";
 import { env } from "@dcc-chatbot/env/server";
 import { createMiddleware } from "hono/factory";
 import { HTTPException } from "hono/http-exception";
@@ -24,7 +25,18 @@ export function auth() {
       });
     }
 
-    c.set("userId", payload.id);
+    const user = await prisma.user.findFirst({
+      where: { id: payload.id, deletedAt: null },
+      select: { id: true },
+    });
+
+    if (!user) {
+      throw new HTTPException(401, {
+        message: "Unauthorized — User no longer exists",
+      });
+    }
+
+    c.set("userId", user.id);
     await next();
   });
 }

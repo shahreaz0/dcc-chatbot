@@ -55,7 +55,6 @@ model Project {
 
   prompts  Prompt[]
   messages ChatMessage[]
-  files    ProjectFile[]
 
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
@@ -85,21 +84,6 @@ model ChatMessage {
   projectId String
   role      String
   content   String
-
-  createdAt DateTime @default(now())
-
-  @@index([projectId])
-}
-
-model ProjectFile {
-  id          String   @id @default(cuid(2))
-  name        String
-  fileUrl     String?
-  fileSize    Int?
-  mimeType    String?
-  providerRef String?
-  project     Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  projectId   String
 
   createdAt DateTime @default(now())
 

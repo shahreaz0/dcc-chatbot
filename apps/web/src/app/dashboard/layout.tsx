@@ -28,7 +28,6 @@ const navItems = [
   { name: "Chat", href: "/dashboard/chat", icon: MessageSquare },
   { name: "Projects", href: "/dashboard/projects", icon: FolderKanban },
   { name: "System Prompts", href: "/dashboard/prompts", icon: Terminal },
-  { name: "Files & Knowledge", href: "/dashboard/files", icon: FileCode },
   { name: "Active Sessions", href: "/dashboard/sessions", icon: ShieldCheck },
 ] as const;
 

@@ -37,6 +37,7 @@ import Cookies from "js-cookie";
 import {
   Bot,
   FileText,
+  Paperclip,
   RotateCcw,
   Send,
   StopCircle,
@@ -146,9 +147,13 @@ export function ChatInterface({ projectId }: ChatInterfaceProps) {
   const onFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!input.trim() && attachments.length === 0) return;
-    sendMessage({ text: input } as any);
+    sendMessage({
+      text: input,
+      files: attachments.length > 0 ? attachments : undefined,
+    } as any);
     setInput("");
     setAttachments([]);
+    if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
   if (!projectId) {
@@ -332,12 +337,24 @@ export function ChatInterface({ projectId }: ChatInterfaceProps) {
             ref={fileInputRef}
             onChange={handleFileSelect}
             multiple
+            accept="image/*,.pdf,.txt,.md,.doc,.docx,.csv,.json"
             className="hidden"
           />
 
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            onClick={() => fileInputRef.current?.click()}
+            className="h-10 w-10 shrink-0 text-muted-foreground hover:text-foreground"
+            title="Attach images or documents"
+          >
+            <Paperclip className="h-4 w-4" />
+          </Button>
+
           <InputGroup className="flex-1">
             <InputGroupTextarea
-              placeholder="Type your message..."
+              placeholder="Type your message or attach files..."
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => {
