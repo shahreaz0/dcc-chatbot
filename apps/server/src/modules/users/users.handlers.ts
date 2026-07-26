@@ -24,8 +24,17 @@ export const getMe: AppRouteHandler<GetMeRoute> = async (c) => {
 };
 
 export const updateMe: AppRouteHandler<UpdateMeRoute> = async (c) => {
-  const userId = c.get("userId");
+  const userId = c.get("userId") as string;
   const body = c.req.valid("json");
+
+  if (body.activeProjectId) {
+    const project = await prisma.project.findFirst({
+      where: { id: body.activeProjectId, userId, deletedAt: null },
+    });
+    if (!project) {
+      throw new HTTPException(404, { message: "Project not found" });
+    }
+  }
 
   const updated = await prisma.user.update({
     where: { id: userId },

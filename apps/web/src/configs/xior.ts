@@ -2,6 +2,7 @@ import Cookies from "js-cookie";
 import xior, { type XiorResponse } from "xior";
 import errorRetry from "xior/plugins/error-retry";
 import setupTokenRefresh from "xior/plugins/token-refresh";
+import { clearAuthState } from "@/lib/query-client";
 
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_SERVER_URL || "http://localhost:8000";
@@ -45,8 +46,7 @@ setupTokenRefresh(xiorInstance, {
   async refreshToken(error) {
     const sessionToken = Cookies.get("dcc_session_token");
     if (!sessionToken) {
-      Cookies.remove("dcc_jwt_token");
-      Cookies.remove("dcc_session_token");
+      clearAuthState();
       return Promise.reject(error);
     }
     try {
@@ -60,8 +60,7 @@ setupTokenRefresh(xiorInstance, {
         throw error;
       }
     } catch (e) {
-      Cookies.remove("dcc_jwt_token");
-      Cookies.remove("dcc_session_token");
+      clearAuthState();
       return Promise.reject(error);
     }
   },

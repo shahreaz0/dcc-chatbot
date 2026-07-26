@@ -3,6 +3,7 @@ import Cookies from "js-cookie";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { xiorInstance } from "@/configs/xior";
+import { clearAuthState } from "@/lib/query-client";
 import type { Session, User } from "@/lib/types";
 
 // ---------------------------------------------------------------------------
@@ -15,6 +16,7 @@ async function login(payload: { email: string; password: string }): Promise<{
   session: Session;
   jwtToken: string;
 }> {
+  clearAuthState();
   try {
     const res = await xiorInstance.post("/auth/login", payload);
     const data = res.data;
@@ -44,6 +46,7 @@ async function register(payload: {
   email: string;
   password: string;
 }): Promise<{ success: boolean; user: User }> {
+  clearAuthState();
   try {
     const res = await xiorInstance.post("/auth/register", payload);
     return res.data;
@@ -58,11 +61,7 @@ async function logout(): Promise<{ success: boolean }> {
   const sessionToken =
     typeof window === "undefined" ? null : Cookies.get("dcc_session_token");
 
-  if (typeof window !== "undefined") {
-    Cookies.remove("dcc_session_token");
-    Cookies.remove("dcc_jwt_token");
-    Cookies.remove("dcc_user");
-  }
+  clearAuthState();
 
   if (sessionToken) {
     try {

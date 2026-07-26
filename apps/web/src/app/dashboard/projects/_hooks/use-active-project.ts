@@ -23,8 +23,15 @@ export function useActiveProject() {
           localStorage.setItem("dcc_active_project", projects[0].id);
         }
       }
+    } else if (!isLoading && projects.length === 0) {
+      if (activeProjectId !== null) {
+        setActiveProjectId(null);
+        if (typeof window !== "undefined") {
+          localStorage.removeItem("dcc_active_project");
+        }
+      }
     }
-  }, [projects, activeProjectId, setActiveProjectId]);
+  }, [projects, activeProjectId, setActiveProjectId, isLoading]);
 
   const setProject = (id: string) => {
     setActiveProjectId(id);

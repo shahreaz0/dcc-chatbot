@@ -32,8 +32,26 @@ export const register: AppRouteHandler<RegisterRoute> = async (c) => {
       email: body.email,
       name: body.name ?? null,
       password: hashedPassword,
+      projects: {
+        create: {
+          name: "Default Project",
+          description: "Your default workspace",
+          model: "deepseek/deepseek-v4-flash",
+        },
+      },
+    },
+    include: {
+      projects: true,
     },
   });
+
+  const defaultProject = user.projects[0];
+  if (defaultProject) {
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { activeProjectId: defaultProject.id },
+    });
+  }
 
   return c.json(
     {
