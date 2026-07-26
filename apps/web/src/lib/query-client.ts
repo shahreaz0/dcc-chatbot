@@ -1,6 +1,6 @@
 import { QueryClient } from "@tanstack/react-query";
 import Cookies from "js-cookie";
-import { resetProjectsStore, useProjectsStore } from "@/stores/projects-store";
+import { resetProjectsStore } from "@/stores/projects-store";
 import { resetPromptsStore } from "@/stores/prompts-store";
 
 export const queryClient = new QueryClient({
@@ -22,5 +22,4 @@ export function clearAuthState() {
   }
   resetProjectsStore();
   resetPromptsStore();
-  useProjectsStore.setActiveProjectId(null);
 }
