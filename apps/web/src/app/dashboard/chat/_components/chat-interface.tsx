@@ -109,7 +109,7 @@ export function ChatInterface({ projectId }: ChatInterfaceProps) {
     } as any);
 
   useEffect(() => {
-    if (initialMessages && initialMessages.length > 0) {
+    if (initialMessages) {
       setMessages(
         initialMessages.map((m) => ({
           id: m.id,

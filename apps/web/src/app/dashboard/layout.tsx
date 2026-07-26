@@ -2,17 +2,9 @@
 
 import { Button } from "@dcc-chatbot/ui/components/button";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@dcc-chatbot/ui/components/dropdown-menu";
-import {
-  ChevronDown,
   FolderKanban,
   LogOut,
   MessageSquare,
-  Plus,
   ShieldCheck,
   Sparkles,
   Terminal,
@@ -20,10 +12,9 @@ import {
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ModeToggle } from "@/components/mode-toggle";
-import { useProjectsStore } from "@/stores/projects-store";
 import { getCurrentUser, useLogout } from "../(auth)/_hooks/use-auth";
 import { CreateProjectDialog } from "./projects/_components/create-project-dialog";
-import { useActiveProject } from "./projects/_hooks/use-active-project";
+import { ProjectSelect } from "./projects/_components/project-select";
 
 const navItems = [
   { name: "Chat", href: "/dashboard/chat", icon: MessageSquare },
@@ -38,10 +29,8 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
-  const { activeProject, projects, setProject } = useActiveProject();
   const { mutate: logout } = useLogout();
   const currentUser = getCurrentUser();
-  const { setIsCreateProjectDialogOpen } = useProjectsStore();
 
   return (
     <div className="flex h-screen overflow-hidden bg-background text-foreground">
@@ -115,49 +104,11 @@ export default function DashboardLayout({
         {/* Top Header */}
         <header className="flex h-14 items-center justify-between border-border/40 border-b bg-card/30 px-6 backdrop-blur-md">
           {/* Active Project Switcher */}
-          <div className="flex items-center gap-3">
-            <span className="font-semibold text-muted-foreground text-xs uppercase tracking-wider">
-              Project:
+          <div className="flex items-center gap-2.5">
+            <span className="hidden font-semibold text-muted-foreground text-xs uppercase tracking-wider sm:inline-block">
+              Active Project:
             </span>
-            <DropdownMenu>
-              <DropdownMenuTrigger
-                render={
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="gap-2 font-medium"
-                  >
-                    <span className="max-w-40 truncate">
-                      {activeProject?.name || "Select Project"}
-                    </span>
-                    <ChevronDown className="h-3.5 w-3.5 opacity-60" />
-                  </Button>
-                }
-              />
-              <DropdownMenuContent align="start" className="w-56">
-                {projects.map((p) => (
-                  <DropdownMenuItem
-                    key={p.id}
-                    onClick={() => setProject(p.id)}
-                    className={
-                      p.id === activeProject?.id
-                        ? "bg-muted/60 font-semibold"
-                        : ""
-                    }
-                  >
-                    {p.name}
-                  </DropdownMenuItem>
-                ))}
-                <DropdownMenuItem
-                  onClick={() => setIsCreateProjectDialogOpen(true)}
-                >
-                  <Plus className="mr-2 h-3.5 w-3.5" /> New Project
-                </DropdownMenuItem>
-                <DropdownMenuItem render={<Link href="/dashboard/projects" />}>
-                  <FolderKanban className="mr-2 h-3.5 w-3.5" /> Manage Projects
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <ProjectSelect />
           </div>
 
           {/* Right Header Actions */}

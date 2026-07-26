@@ -8,7 +8,10 @@ export default function ChatPage() {
 
   return (
     <div className="h-[calc(100vh-6rem)] w-full overflow-hidden">
-      <ChatInterface projectId={activeProjectId} />
+      <ChatInterface
+        key={activeProjectId ?? "none"}
+        projectId={activeProjectId}
+      />
     </div>
   );
 }

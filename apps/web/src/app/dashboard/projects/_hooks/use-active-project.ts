@@ -1,22 +1,30 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
+import { useProjectsStore } from "@/stores/projects-store";
 import { useGetProjects } from "./use-get-projects";
 
 export function useActiveProject() {
   const { data: projects = [], isLoading } = useGetProjects();
-  const [activeProjectId, setActiveProjectId] = useState<string | null>(null);
+  const { activeProjectId, setActiveProjectId } = useProjectsStore();
 
   useEffect(() => {
     const savedId =
       typeof window !== "undefined"
         ? localStorage.getItem("dcc_active_project")
         : null;
+
     if (savedId && projects.some((p) => p.id === savedId)) {
-      setActiveProjectId(savedId);
+      if (activeProjectId !== savedId) {
+        setActiveProjectId(savedId);
+      }
     } else if (projects.length > 0) {
-      setActiveProjectId(projects[0].id);
-      localStorage.setItem("dcc_active_project", projects[0].id);
+      if (!activeProjectId || !projects.some((p) => p.id === activeProjectId)) {
+        setActiveProjectId(projects[0].id);
+        if (typeof window !== "undefined") {
+          localStorage.setItem("dcc_active_project", projects[0].id);
+        }
+      }
     }
-  }, [projects]);
+  }, [projects, activeProjectId, setActiveProjectId]);
 
   const setProject = (id: string) => {
     setActiveProjectId(id);
